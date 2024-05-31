@@ -1,4 +1,5 @@
 import pytest
+
 from decimal import Decimal
 
 from django.urls import reverse
@@ -8,7 +9,7 @@ from pycun_pruebas_unitarias.apps.invoice.views import is_greater_than, sum
 from pycun_pruebas_unitarias.apps.invoice.models import Invoice, InvoiceArticle
 from pycun_pruebas_unitarias.apps.invoice.utils import calculate_taxes_per_item
 
-
+# region pruebas unitarias
 def test_sum():
     assert sum(2, 5) == 7
 
@@ -18,8 +19,10 @@ def test_is_greater_than():
 
 
 @pytest.mark.parametrize(
+    # Se establecen los argumentos esperados
     "input_x, input_y, expected",
     [
+        # Se envian los datos de entrada y de salida 
         (5, 1, 6),
         (6, sum(4, 2), 12),
         (sum(19, 1), 15, 35),
@@ -31,8 +34,10 @@ def test_sum_params(input_x, input_y, expected):
 
 
 @pytest.mark.parametrize(
+    # Se establecen los argumentos esperados
     "quantity, price, tax_percentage, expected_result",
     [
+        # Se envian los datos de entrada y de salida 
         (Decimal(1), Decimal(100), Decimal(16), {
             "sub_total": Decimal(100),
             "total_tax": Decimal(16),
@@ -54,7 +59,7 @@ def test_sum_params(input_x, input_y, expected):
     ]   
 )
 def test_taxes_per_article(quantity, price, tax_percentage, expected_result):
-
+    # Verifica que se ejecute correctamente las funciones
     result = calculate_taxes_per_item(quantity, price, tax_percentage)
 
     # Verificar que el resultado sea un diccionario
@@ -62,6 +67,36 @@ def test_taxes_per_article(quantity, price, tax_percentage, expected_result):
 
     # Verificar que el diccionario contiene las claves y valores esperados
     assert result == expected_result, "El contenido del diccionario no es el esperado"
+
+# endregion pruebas unitarias
+
+# region pruebas vistas
+@pytest.mark.django_db
+def test_invoice_list_view():
+    # Crear datos de prueba
+    invoice1 = Invoice.objects.create(total=116, sub_total=100, tax=16, total_tax=16)
+    invoice_article1 = InvoiceArticle.objects.create(quantity=1, price=100, description="Articulo de prueba 1", invoice=invoice1)
+    invoice2 = Invoice.objects.create(total=220, sub_total=200, tax=10, total_tax=20)
+    invoice_article1 = InvoiceArticle.objects.create(quantity=2, price=100, description="Articulo de prueba 1", invoice=invoice2)
+    
+    # Configurar el cliente de prueba
+    client = Client()
+    
+    # Obtener la URL de la vista
+    url = reverse('invoice_list')  # Asegúrate de que el nombre de la URL esté correcto
+    
+    # Hacer una solicitud GET a la vista
+    response = client.get(url)
+    
+    # Verificar que la solicitud fue exitosa
+    assert response.status_code == 200
+    
+    # Verificar que el contexto de la respuesta contiene las facturas esperadas
+    assert 'invoices' in response.context
+    assert list(response.context['invoices']) == [invoice1, invoice2]
+    
+    # Verificar que se utiliza la plantilla correcta
+    assert response.templates[0].name == 'invoice_list.html'
 
 
 @pytest.mark.django_db
@@ -109,3 +144,4 @@ def test_invoice_create_view():
     assert article.description == 'Artículo de prueba'
     assert article.price == 100.00
     assert article.invoice == invoice
+# endregion pruebas vistas

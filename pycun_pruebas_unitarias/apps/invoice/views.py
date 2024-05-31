@@ -8,15 +8,19 @@ from pycun_pruebas_unitarias.apps.invoice.models import Invoice, InvoiceArticle
 from pycun_pruebas_unitarias.apps.invoice.forms.invoice_forms import InvoiceForm, InvoiceArticleForm
 
 
+# region funciones basicas
 def sum(x, y):
     return x + y
 
 
 def is_greater_than(number_1, number_2):
     return number_1 > number_2
-
+# endregion funciones
 
 # region Invoice
+def home(request):
+    return render(request, 'home.html')
+
 def invoice_list(request):
     invoices = Invoice.objects.all()
     return render(request, "invoice_list.html", {

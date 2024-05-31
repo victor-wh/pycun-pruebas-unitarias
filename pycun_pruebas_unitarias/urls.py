@@ -16,11 +16,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from pycun_pruebas_unitarias.apps.invoice.views import invoice_list, invoice_create
+from pycun_pruebas_unitarias.apps.invoice.views import home, invoice_list, invoice_create
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', home, name='index'),
     # region Invoice
     path("invoice/list/", invoice_list, name="invoice_list"),
     path("invoice/create/", invoice_create, name="invoice_create")
