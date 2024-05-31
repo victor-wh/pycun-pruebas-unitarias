@@ -8,6 +8,7 @@ from django.test import Client
 from pycun_pruebas_unitarias.apps.invoice.views import is_greater_than, sum
 from pycun_pruebas_unitarias.apps.invoice.models import Invoice, InvoiceArticle
 from pycun_pruebas_unitarias.apps.invoice.utils import calculate_taxes_per_item
+from pycun_pruebas_unitarias.apps.invoice.forms.invoice_forms import InvoiceForm, InvoiceArticleForm
 
 # region pruebas unitarias
 def test_sum():
@@ -69,6 +70,54 @@ def test_taxes_per_article(quantity, price, tax_percentage, expected_result):
     assert result == expected_result, "El contenido del diccionario no es el esperado"
 
 # endregion pruebas unitarias
+
+
+# range Pruebas de formularios
+@pytest.mark.django_db
+def test_valid_invoice_form():
+    # Probamos que el formulario acepte un impuesto de 10
+    form_data = {'tax': 10}
+    form = InvoiceForm(data=form_data)
+    assert form.is_valid() 
+
+@pytest.mark.django_db
+def test_invalid_invoice_form():
+    # Probamos que el formulario rechace los strings en un campo Decimal
+    form_data = {'tax': 'abc'}
+    form = InvoiceForm(data=form_data)
+    assert not form.is_valid()
+
+@pytest.mark.django_db
+def test_valid_invoice_article_form():
+    # Probamos que el formulario acepte datos validos
+    form_data = {'quantity': 2, 'description': 'Test Description', 'price': 50}
+    form = InvoiceArticleForm(data=form_data)
+    assert form.is_valid() 
+
+@pytest.mark.django_db
+def test_invalid_invoice_article_form():
+    # Probamos que el formulario rechace valores negativos
+    form_data = {'quantity': -2, 'description': 'Test Description', 'price': 50}
+    form = InvoiceArticleForm(data=form_data)
+    assert not form.is_valid()
+# endrange Pruebas de formularios
+
+# region prueba plantillas
+@pytest.mark.django_db
+def test_invoice_list_no_invoices(client):
+    response = client.get(reverse('invoice_list'))
+    assert response.status_code == 200
+
+    assert b'<td>No Invoices</td>' in response.content
+# endregion prueba plantillas
+
+# region prueba de base de datos
+def test_model_creation(db):
+    invoice1 = Invoice.objects.create(total=116, sub_total=100, tax=16, total_tax=16)
+    invoice_article1 = InvoiceArticle.objects.create(quantity=1, price=100, description="Articulo de prueba 1", invoice=invoice1)
+    assert invoice1.id is not None
+    assert invoice_article1.id is not None
+# endregion prueba de base de datos
 
 # region pruebas vistas
 @pytest.mark.django_db
