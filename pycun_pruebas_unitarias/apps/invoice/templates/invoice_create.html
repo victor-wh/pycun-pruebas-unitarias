@@ -1,0 +1,158 @@
+{% extends 'base.html' %} {% load static %}
+
+{% block extrastatic %}
+<style type="text/css">
+    /* Estilos generales para el formulario */
+    .formset-form {
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin-bottom: 10px;
+        background-color: #f9f9f9;
+        border-radius: 5px;
+    }
+
+    /* Estilo para el contenedor del formset */
+    .formset-container {
+        margin: 0 auto;
+        max-width: 600px;
+        padding: 20px;
+        background-color: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Estilo para los campos individuales del formulario */
+    .formset-form .form-group {
+        margin-bottom: 15px;
+    }
+
+    .formset-form label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #333;
+    }
+
+    .formset-form input[type="text"],
+    .formset-form input[type="email"],
+    .formset-form input[type="password"],
+    .formset-form select,
+    .formset-form textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-size: 14px;
+    }
+
+    /* Estilo para el botón de añadir/eliminar formularios */
+    .formset-form .add-form-button,
+    .formset-form .delete-form-button {
+        display: inline-block;
+        padding: 8px 12px;
+        margin-top: 10px;
+        font-size: 14px;
+        color: #fff;
+        background-color: #007bff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .formset-form .delete-form-button {
+        background-color: #dc3545;
+    }
+
+    .formset-form .add-form-button:hover,
+    .formset-form .delete-form-button:hover {
+        opacity: 0.8;
+    }
+
+    /* Estilo para los errores del formulario */
+    .formset-form .errorlist {
+        margin: 0;
+        padding: 0;
+        list-style-type: none;
+        color: #d9534f;
+        font-size: 13px;
+    }
+
+    .formset-form .errorlist li {
+        margin-bottom: 5px;
+    }
+
+</style>
+{% endblock %}
+
+{% block title %} Invoice Create {% endblock %}
+{% block content %}
+    <h4>Invoice Create</h4>
+
+    <div class="formset-container">
+        <form method="post">
+            <label>{{ invoice_form.tax.label }}</label>
+            {{ invoice_form.tax }}
+            {% csrf_token %}
+            {{ formset.management_form }}
+            {% for form in formset %}
+                <div class="formset-form">
+                    {% for field in form %}
+                        <div class="form-group">
+                            {{ field.label_tag }}
+                            {{ field }}
+                            {% if field.errors %}
+                                <ul class="errorlist">
+                                    {% for error in field.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    <a href="#" class="delete-form-button">Eliminar</a>
+                </div>
+            {% endfor %}
+            <a href="#" class="add-form-button">Añadir más</a>
+            <button type="submit">Enviar</button>
+        </form>
+    </div>
+
+{% endblock %}
+{% block extrajs %}
+<script type="text/javascript" src="{% static 'js/plugins/formset/jquery.formset.js' %} "></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const addButton = document.querySelector('.add-form-button');
+        const formsetContainer = document.querySelector('.formset-container');
+        const totalForms = document.querySelector('#id_form-TOTAL_FORMS');
+        let formCount = parseInt(totalForms.value);
+
+        addButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            const newForm = formsetContainer.querySelector('.formset-form').cloneNode(true);
+            newForm.querySelectorAll('input, select, textarea').forEach(function(input) {
+                const name = input.name.replace(`-${formCount - 1}-`, `-${formCount}-`);
+                const id = `id_${name}`;
+                input.name = name;
+                input.id = id;
+                input.value = '';
+            });
+            formsetContainer.appendChild(newForm);
+            formCount++;
+            totalForms.value = formCount;
+        });
+
+        formsetContainer.addEventListener('click', function(e) {
+            if (e.target.classList.contains('delete-form-button')) {
+                e.preventDefault();
+                e.target.closest('.formset-form').remove();
+                formCount--;
+                totalForms.value = formCount;
+            }
+        });
+    });
+</script>
+{% endblock %}

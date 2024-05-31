@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %} Invoice List {% endblock %}
+{% block content %}
+    <h4>Lista Clones</h4>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <td>#</td>
+                <td>SubTotal</td>
+                <td>Tax</td>
+                <td>Total</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% if invoices %}
+                {% for invoice in invoices %}
+                <tr>
+                    <td>{{ invoice.id }}</td>
+                    <td>{{ invoice.sub_total}}</td>
+                    <td>{{ invoice.tax }}</td>
+                    <td>{{ invoice.total }}</td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td>No Invoices</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            {% endif %}
+
+        </tbody>
+    </table>
+{% endblock content %}

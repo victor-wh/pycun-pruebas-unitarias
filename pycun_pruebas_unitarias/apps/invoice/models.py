@@ -2,9 +2,10 @@ from django.db import models
 
 
 class Invoice(models.Model):
-    total = models.DecimalField(max_digits=10, decimal_places=2)
-    sub_total = models.DecimalField(max_digits=10, decimal_places=2)
+    total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    sub_total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     tax = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_tax = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     class Meta:
         verbose_name = "Invoice"
@@ -16,7 +17,7 @@ class Invoice(models.Model):
 
 class InvoiceArticle(models.Model):
     quantity = models.PositiveSmallIntegerField(default=1)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     description = models.TextField(blank=True)
 
     invoice = models.ForeignKey(Invoice, related_name='invoice_articles', on_delete=models.CASCADE)
